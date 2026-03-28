@@ -1,14 +1,13 @@
 # Farmers Guide Weather
 
-A Home Assistant custom integration that scrapes soil temperature data from [farmersguide.co.uk](https://www.farmersguide.co.uk/weather/).
+A Home Assistant custom integration that scrapes soil data from [farmersguide.co.uk](https://www.farmersguide.co.uk/weather/) for a given UK postcode. Updates every hour.
 
-## Sensor
+## Sensors
 
 | Entity | Description |
 |--------|-------------|
 | `sensor.farmers_guide_soil_temperature` | Current soil temperature (°C) from the 72-hour forecast |
-
-Updates every hour.
+| `sensor.farmers_guide_soil_moisture` | Current soil moisture (%) from the 72-hour forecast |
 
 ## Installation via HACS
 
