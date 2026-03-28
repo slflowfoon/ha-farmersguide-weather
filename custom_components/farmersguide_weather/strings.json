@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Farmers Guide Weather",
+        "description": "Adds a soil temperature sensor scraped from farmersguide.co.uk for postcode {postcode}. Updates every hour."
+      }
+    },
+    "abort": {
+      "already_configured": "Farmers Guide Weather is already configured."
+    }
+  }
+}
