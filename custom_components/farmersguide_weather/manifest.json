@@ -1,0 +1,11 @@
+{
+  "domain": "farmersguide_weather",
+  "name": "Farmers Guide Weather",
+  "version": "1.0.0",
+  "documentation": "https://github.com/slflowfoon/ha-farmersguide-weather",
+  "issue_tracker": "https://github.com/slflowfoon/ha-farmersguide-weather/issues",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@slflowfoon"],
+  "iot_class": "cloud_polling"
+}
