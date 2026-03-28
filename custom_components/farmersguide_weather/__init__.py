@@ -15,7 +15,7 @@ PLATFORMS = ["sensor"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Farmers Guide Weather from a config entry."""
-    coordinator = FarmersGuideCoordinator(hass)
+    coordinator = FarmersGuideCoordinator(hass, entry.data["postcode"])
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator

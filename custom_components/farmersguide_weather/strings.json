@@ -3,11 +3,17 @@
     "step": {
       "user": {
         "title": "Farmers Guide Weather",
-        "description": "Adds a soil temperature sensor scraped from farmersguide.co.uk for postcode {postcode}. Updates every hour."
+        "description": "Enter your UK postcode to fetch soil temperature data from farmersguide.co.uk. Updates every hour.",
+        "data": {
+          "postcode": "Postcode"
+        }
       }
     },
+    "error": {
+      "invalid_postcode": "Please enter a valid UK postcode (e.g. RH19 3QG)"
+    },
     "abort": {
-      "already_configured": "Farmers Guide Weather is already configured."
+      "already_configured": "This postcode is already configured."
     }
   }
 }

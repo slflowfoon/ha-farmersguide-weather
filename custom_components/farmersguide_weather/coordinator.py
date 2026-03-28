@@ -14,8 +14,6 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 _LOGGER = logging.getLogger(__name__)
 
-POSTCODE = "RH19+3QG"
-URL = f"https://www.farmersguide.co.uk/weather/?postcode={POSTCODE}"
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -31,7 +29,7 @@ HEADERS = {
 class FarmersGuideCoordinator(DataUpdateCoordinator):
     """Fetches and caches soil temperature from the Farmers Guide 72-hr forecast."""
 
-    def __init__(self, hass: HomeAssistant) -> None:
+    def __init__(self, hass: HomeAssistant, postcode: str) -> None:
         """Initialise the coordinator."""
         super().__init__(
             hass,
@@ -39,13 +37,15 @@ class FarmersGuideCoordinator(DataUpdateCoordinator):
             name="farmersguide_weather",
             update_interval=timedelta(hours=1),
         )
+        self.postcode = postcode
+        self.url = f"https://www.farmersguide.co.uk/weather/?postcode={postcode}"
 
     async def _async_update_data(self) -> float:
         """Scrape the current soil temperature value."""
         session = async_get_clientsession(self.hass)
         try:
             async with session.get(
-                URL,
+                self.url,
                 headers=HEADERS,
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as resp:
