@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
+from dataclasses import dataclass
 from datetime import timedelta
 
 import aiohttp
@@ -26,8 +27,22 @@ HEADERS = {
 }
 
 
-class FarmersGuideCoordinator(DataUpdateCoordinator):
-    """Fetches and caches soil temperature from the Farmers Guide 72-hr forecast."""
+@dataclass
+class FarmersGuideData:
+    """Holds scraped data from the current forecast row."""
+
+    soil_temp: float
+    soil_moisture: float
+
+
+def _parse_number(text: str) -> float | None:
+    """Extract the first numeric value from a string."""
+    match = re.search(r"(-?\d+\.?\d*)", text)
+    return float(match.group(1)) if match else None
+
+
+class FarmersGuideCoordinator(DataUpdateCoordinator[FarmersGuideData]):
+    """Fetches and caches forecast data from the Farmers Guide 72-hr table."""
 
     def __init__(self, hass: HomeAssistant, postcode: str) -> None:
         """Initialise the coordinator."""
@@ -40,8 +55,8 @@ class FarmersGuideCoordinator(DataUpdateCoordinator):
         self.postcode = postcode
         self.url = f"https://www.farmersguide.co.uk/weather/?postcode={postcode}"
 
-    async def _async_update_data(self) -> float:
-        """Scrape the current soil temperature value."""
+    async def _async_update_data(self) -> FarmersGuideData:
+        """Scrape the current forecast row."""
         session = async_get_clientsession(self.hass)
         try:
             async with session.get(
@@ -55,15 +70,30 @@ class FarmersGuideCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Error fetching Farmers Guide page: {err}") from err
 
         soup = BeautifulSoup(html, "html.parser")
-        cell = soup.find("td", class_="weather-soil")
-        if cell is None:
-            raise UpdateFailed(
-                "Soil temperature cell not found — site structure may have changed"
-            )
 
-        text = cell.get_text(strip=True)
-        match = re.search(r"(-?\d+\.?\d*)", text)
-        if not match:
-            raise UpdateFailed(f"Could not parse soil temperature: {text!r}")
+        # All data comes from the first <tr> in the forecast table
+        row = soup.find("tr", class_="first-date")
+        if row is None:
+            # Fall back to first data row
+            row = soup.find("tbody").find("tr") if soup.find("tbody") else None
+        if row is None:
+            raise UpdateFailed("Could not find forecast table row — site structure may have changed")
 
-        return float(match.group(1))
+        soil_cell = row.find("td", class_="weather-soil")
+        moisture_cell = row.find("td", class_="weather-moisture")
+
+        if soil_cell is None:
+            raise UpdateFailed("Soil temperature cell not found")
+
+        soil_temp = _parse_number(soil_cell.get_text(strip=True))
+        if soil_temp is None:
+            raise UpdateFailed(f"Could not parse soil temperature: {soil_cell.get_text()!r}")
+
+        soil_moisture = None
+        if moisture_cell is not None:
+            soil_moisture = _parse_number(moisture_cell.get_text(strip=True))
+
+        return FarmersGuideData(
+            soil_temp=soil_temp,
+            soil_moisture=soil_moisture,
+        )
